@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: log-agent
+spec:
+  selector:
+    matchLabels:
+      app: log-agent
+  template:
+    metadata:
+      labels:
+        app: log-agent
+    spec:
+      containers:
+      - name: log-agent
+        image: busybox
+        command: ["sh", "-c", "tail -f /var/log/kube-app/app.log"]
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /var/log/kube-app
+      volumes:
+      - name: logs-volume
+        hostPath:
+          path: /var/log/kube-app
+          type: DirectoryOrCreate

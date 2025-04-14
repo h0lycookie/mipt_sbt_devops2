@@ -1,0 +1,32 @@
+piVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kube-app
+  template:
+    metadata:
+      labels:
+        app: kube-app
+    spec:
+      containers:
+      - name: app
+        image: kube-app:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5252
+        envFrom:
+        - configMapRef:
+            name: app-config
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /app/logs
+      volumes:
+      - name: logs-volume
+        hostPath:
+          path: /var/log/kube-app
+          type: DirectoryOrCreate
+          
