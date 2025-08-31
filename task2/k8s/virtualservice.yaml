@@ -1,0 +1,84 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: app-virtualservice
+spec:
+  hosts:
+  - "*" 
+  gateways:
+  - app-gateway
+  http:
+    - match:
+        - uri:
+            exact: /api/v1/
+          method:
+            exact: GET
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: app-service
+            port:
+              number: 80
+
+    - match:
+        - uri:
+            prefix: /api/v1/status
+          method:
+            exact: GET
+      rewrite:
+        uri: /status  
+      route:
+        - destination:
+          host: app-service
+          port:
+            number: 80
+
+    - match:
+        - uri:
+            exact: /api/v1/logs
+          method:
+            exact: GET
+      rewrite:
+        uri: /logs  
+      route:
+        - destination:
+          host: app-service
+          port:
+            number: 80
+
+    - match:
+        - uri:
+            exact: /api/v1/log
+          method:
+            exact: POST
+      rewrite:
+        uri: /log
+      route:
+        - destination:
+            host: app-service
+            port:
+              number: 80
+      timeout: 1s
+      retries:
+        attempts: 2
+      fault:
+        delay:
+          percentage:
+            value: 100
+          fixedDelay: 2s
+
+    - name: for404
+      match:
+      - uri:
+          prefix: /
+      route:
+      - destination:
+          host: blackhole.istio-system.svc.cluster.local
+          port:
+            number: 80
+      fault:
+        abort:
+          httpStatus: 404
+          percentage:
+            value: 100
